@@ -17,4 +17,4 @@ AUTHOR_EMAIL = 'gabriel.nistor@sourcefabric.org'
 KEYWORDS = ['Ally', 'REST', 'plugin', 'cdm']
 DESCRIPTION = 'Provides the cdm file system service'
 LONG_DESCRIPTION = ''' The content delivery manager support for publishing binary resources to different platforms.'''
-INSTALL_REQUIRES = ['ally >= 1.0'] 
+INSTALL_REQUIRES = ['ally >= 1.0', 'ally-service-cdm >= 1.0'] 
