@@ -71,11 +71,11 @@ class VersioningCDM(ICDM):
         '''
         self.wrapped.publishFromDir(path, dirPath)
 
-    def publishContent(self, path, content):
+    def publishContent(self, path, content, metadata):
         '''
         @see: ICDM.publishContent
         '''
-        self.wrapped.publishContent(path, content)
+        self.wrapped.publishContent(path, content, metadata)
         
     def updateMetadata(self, path, metadata):
         '''

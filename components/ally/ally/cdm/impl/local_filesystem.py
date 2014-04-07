@@ -145,7 +145,7 @@ class LocalFileSystemCDM(ICDM):
                 assert log.debug('No CDM metadata found for path {0}.'.format(path), exc_info=1) or True
                 return {'createdOn': os.path.getctime(itemPath),
                         'lastModified': os.path.getmtime(itemPath)}
-        return {}
+        raise PathNotFound(itemPath)
     # --------------------------------------------------------------------
 
     def publishFromFile(self, path, filePath, metadata):
