@@ -122,7 +122,7 @@ class LocalFileSystemCDM(ICDM):
         '''
         assert isinstance(path, str), 'Invalid content path %s' % path
         assert isinstance(protocol, str), 'Invalid protocol %s' % protocol
-        if protocol == 'http':
+        if protocol == 'http' or protocol == 'https':
             return self.delivery.getURI(path)
         if protocol == 'file':
             return abspath(self._getItemPath(path))
