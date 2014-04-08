@@ -114,7 +114,7 @@ class LocalFileSystemCDM(ICDM):
         '''
         @see ICDM.getSupportedProtocols
         '''
-        return ('http',)
+        return ('http', 'https')
 
     def getURI(self, path, protocol='http'):
         '''
