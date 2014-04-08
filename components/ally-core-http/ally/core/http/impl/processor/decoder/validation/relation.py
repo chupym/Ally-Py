@@ -87,6 +87,7 @@ class Request(Context):
     The request context.
     '''
     # ---------------------------------------------------------------- Defined
+    scheme = defines(str)
     node = defines(Context)
     nodesValues = defines(dict)
     converterPath = defines(Converter)
@@ -181,6 +182,7 @@ class ValidateRelation(HandlerBranching):
             arg = dict(target.arg.__dict__)
             request = processing.ctx.request()
             assert isinstance(request, Request)
+            request.scheme = target.arg.request.scheme
             request.node = relation.node
             request.converterPath = target.arg.request.converterPath
             request.method = HTTP_GET

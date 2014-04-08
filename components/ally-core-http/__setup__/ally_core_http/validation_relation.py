@@ -18,7 +18,7 @@ from ally.design.processor.handler import Handler
 from ..ally_core.decode import updateAssemblyDecodeModel, assemblyDecodeModel, \
     validateLen, updateAssemblyDecodeContentExport, assemblyDecodeContentExport
 from ..ally_core.processor import invoking
-from .processor import methodInvoker
+from .processor import methodInvoker, scheme
 
 
 # --------------------------------------------------------------------
@@ -41,7 +41,7 @@ def validateRelation() -> Handler:
 
 @ioc.before(assemblyValidationInvoking)
 def updateAssemblyValidationInvoking():
-    assemblyValidationInvoking().add(methodInvoker(), invoking())
+    assemblyValidationInvoking().add(methodInvoker(), scheme(), invoking())
 
 @ioc.after(updateAssemblyDecodeModel)
 def updateAssemblyDecodeModelForValidation():
