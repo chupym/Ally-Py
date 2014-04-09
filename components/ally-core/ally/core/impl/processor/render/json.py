@@ -437,8 +437,8 @@ class RenderJSON(IRender):
             self._adjust = False
         if not isAdjust:
             if self._block:
-                assert indexBlock is None, 'No index block expected, but got %s' % indexBlock
-                assert not indexAttributesCapture, 'No attributes capture expected, but got %s' % indexAttributesCapture
+                indexBlock = None
+                indexAttributesCapture = immut()
                 index = None
             elif indexBlock:
                 assert isinstance(indexBlock, str), 'Invalid index block %s' % indexBlock

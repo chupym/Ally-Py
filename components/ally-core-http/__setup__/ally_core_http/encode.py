@@ -9,12 +9,6 @@ Created on Mar 8, 2013
 Provides the setup for the encode processors.
 '''
 
-from ..ally_core.encode import assemblyModelExtraEncode, updateAssemblyEncode, \
-    assemblyEncode, propertyOfModelEncode, assemblyItemEncode, \
-    updateAssemblyItemEncode, assemblyPropertyEncode, updateAssemblyPropertyEncode, \
-    modelPropertyEncode, modelEncode, updateAssemblyEncodeExport, \
-    assemblyEncodeExport
-from ..ally_core.parsing_rendering import blocksDefinitions
 from ally.container import ioc
 from ally.core.http.impl.index import BLOCKS_HTTP
 from ally.core.http.impl.processor.encoder.accessible_paths import \
@@ -30,8 +24,17 @@ from ally.core.http.impl.processor.encoder.property_reference import \
 from ally.core.impl.processor.encoder.property import propertyEncodeExport
 from ally.design.processor.handler import Handler
 
-# --------------------------------------------------------------------
+from ..ally_core.encode import assemblyModelExtraEncode, updateAssemblyEncode, \
+    assemblyEncode, propertyOfModelEncode, assemblyItemEncode, \
+    updateAssemblyItemEncode, assemblyPropertyEncode, updateAssemblyPropertyEncode, \
+    modelPropertyEncode, modelEncode, updateAssemblyEncodeExport, \
+    assemblyEncodeExport
+from ..ally_core.encode import updateAssemblyPropertyPrimitiveEncode, \
+    assemblyPropertyPrimitiveEncode, propertyEncode
+from ..ally_core.parsing_rendering import blocksDefinitions
 
+
+# --------------------------------------------------------------------
 @ioc.entity
 def pathUpdaterSupportEncode() -> Handler: return PathUpdaterSupportEncode()
 
@@ -53,7 +56,11 @@ def propertyOfModelPathAttributeEncode() -> Handler: return PropertyOfModelPathA
 def updateAssemblyEncodeWithPath():
     assemblyEncode().add(modelPathAttributeEncode(), before=modelPropertyEncode())
     assemblyEncode().add(pathUpdaterSupportEncode())
-
+    
+@ioc.after(updateAssemblyPropertyPrimitiveEncode)
+def updateAssemblyPropertyPrimitiveReferenceEncode():
+    assemblyPropertyPrimitiveEncode().add(propertyReferenceEncode(), before=propertyEncode())
+    
 @ioc.after(assemblyModelExtraEncode)
 def updateAssemblyModelExtraEncodeWithPath():
     assemblyModelExtraEncode().add(accessiblePathEncode())
@@ -75,6 +82,7 @@ def updateAssemblyPropertyEncodeWithPath():
 def updateAssemblyEncodeExportForPath():
     assemblyEncodeExport().add(propertyEncodeExport, pathUpdaterSupportEncodeExport, propertyReferenceEncodeExport,
                                propertyOfModelPathAttributeEncodeExport)
+
 
 # --------------------------------------------------------------------
 

@@ -14,7 +14,7 @@ from ally.api.type import TypeReference, Type
 from ally.container.ioc import injected
 from ally.core.http.impl.index import NAME_BLOCK_CLOB, ACTION_REFERENCE
 from ally.core.spec.transform import ITransfrom, IRender
-from ally.design.processor.attribute import requires, defines
+from ally.design.processor.attribute import requires, defines, optional
 from ally.design.processor.context import Context
 from ally.design.processor.handler import HandlerProcessor
 from ally.support.util_spec import IDo
@@ -32,7 +32,8 @@ class Create(Context):
     The encoder for the reference.
     ''')
     # ---------------------------------------------------------------- Required
-    name = requires(str)
+    name = optional(str)
+    # ---------------------------------------------------------------- Required
     objType = requires(Type)
 
 class Support(Context):
@@ -76,8 +77,10 @@ class PropertyReferenceEncode(HandlerProcessor):
         if not isinstance(create.objType.type, TypeReference): return 
         # The type is not a reference, just move along
         
-        assert isinstance(create.name, str), 'Invalid name %s' % create.name
-        create.encoder = EncoderReference(create.name, self.nameRef)
+        if Create.name in create and create.name: name = create.name
+        else: name = create.objType.name
+        assert isinstance(name, str), 'Invalid name %s' % name
+        create.encoder = EncoderReference(name, self.nameRef)
 
 # --------------------------------------------------------------------
 
