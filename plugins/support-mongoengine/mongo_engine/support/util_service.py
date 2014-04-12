@@ -20,7 +20,7 @@ from ally.api.type import typeFor
 from ally.support.api.util_service import namesFor, likeAsRegex, modelId
 from ally.support.util import modifyFirst
 from inspect import isclass
-from mongoengine.document import Document
+from mongoengine.document import Document, EmbeddedDocument
 from ally.api.error import IdError, InputError
 from ally.internationalization import _
 
@@ -199,10 +199,37 @@ def iterateCollection(objects, field, offset=None, limit=None, withTotal=False, 
 
 # --------------------------------------------------------------------
 
+def copyModel(Mapped, src, dst=None):
+    '''
+    Copy the source model into the destination mapped model. If dst is None
+    it creates a new model.
+    
+    @param src: object
+        The source model from which to copy.
+    @param dst: object
+        The destination mapped model to which to copy.
+    @return: object
+        The database model that has been inserted.
+    '''
+    assert isclass(Mapped), 'Invalid class %s' % Mapped
+    assert issubclass(Mapped, Document) or issubclass(Mapped, EmbeddedDocument), 'Invalid mapped class %s' % Mapped
+    assert dst is None or isinstance(dst, Mapped), 'Invalid mapped model %s' % dst
+    
+    typ = typeFor(Mapped)
+    assert isinstance(typ, TypeModel), 'Invalid model class %s' % Mapped
+    
+    if dst is None:
+        dst = Mapped()
+    for name, prop in typ.properties.items():
+        if not isinstance(getattr(Mapped, name), BaseField): continue
+        if not isinstance(src, Mapped) and prop in src or name in src:
+            setattr(dst, name, getattr(src, name))
+    return dst
+
 def insertModel(Mapped, model, **data):
     '''
     Inserts the provided model entity.
-
+    
     @param Mapped: class
         The mapped class to insert the model for.
     @param model: object
@@ -214,16 +241,17 @@ def insertModel(Mapped, model, **data):
     '''
     assert isclass(Mapped), 'Invalid class %s' % Mapped
     assert issubclass(Mapped, Document), 'Invalid mapped class %s' % Mapped
+    
+    typ = typeFor(Mapped)
+    assert isinstance(typ, TypeModel), 'Invalid model class %s' % Mapped
+    
     if isinstance(model, Mapped): dbModel = model
     else:
-        typ = typeFor(Mapped)
-        assert isinstance(typ, TypeModel), 'Invalid model class %s' % Mapped
-        
         dbModel = Mapped()
         for name, prop in typ.properties.items():
             if name in data or not isinstance(getattr(Mapped, name), BaseField): continue
             if prop in model: setattr(dbModel, name, getattr(model, name))
-            
+        
         for name, value in data.items(): setattr(dbModel, name, value)
     
     if typ.propertyId:
