@@ -119,4 +119,6 @@ class GeneratorHandler(HandlerProcessor):
     
     def ident(self, text, ident='   '):
         ''' Escapes a restructured text.'''
-        return ident + text.replace('\n', '\n%s' % ident)
+        if isinstance(text, str):
+            return ident + text.replace('\n', '\n%s' % ident)
+        return ident
