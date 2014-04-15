@@ -14,7 +14,8 @@
 *.pyc
 *.properties*
 .settings
-
+*.swp
+.ropeproject
 .project
 .pydevproject*
 /.metadata/
