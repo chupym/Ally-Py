@@ -43,7 +43,20 @@ class ICDM(metaclass=abc.ABCMeta):
         @param metadata: dict
             The dict containing metadata as key:value pairs
         '''
-        
+    
+    @abc.abstractmethod
+    def copyLocal(self, path, localPath):
+        '''
+        Copy a file from the given path to local storage.
+
+        @param path: string
+            The path of the content item. This is a unique identifier of the item.
+        @param localPath: string
+            The path of the file on the local file system
+        @return: string
+            The path to which the file was copied.
+        '''
+    
     @abc.abstractmethod
     def updateMetadata(self, path, metadata):
         '''
@@ -100,6 +113,7 @@ class ICDM(metaclass=abc.ABCMeta):
     def getMetadata(self, path):
         '''
         Returns the metadata (json like content) for the path item
+        Throws PathNotFound on invalid path
         
         @param path: string
             The path to the item in cdm

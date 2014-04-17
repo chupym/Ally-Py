@@ -25,8 +25,8 @@ from ally.container import wire
 from ally.container.ioc import injected
 from ally.zip.util_zip import normOSPath, normZipPath
 
-
 # --------------------------------------------------------------------
+
 log = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------
@@ -135,7 +135,7 @@ class LocalFileSystemCDM(ICDM):
         
         assert isinstance(path, str), 'Invalid content path %s' % path
         path, itemPath = self._validatePath(path)
-        if isdir(itemPath) or isfile(itemPath):
+        if isdir(itemPath) and isfile(itemPath):
             metaItemPath = itemPath + self.cdm_meta_extension
             try:
                 with open(metaItemPath, 'r') as metaFile: 
@@ -184,13 +184,34 @@ class LocalFileSystemCDM(ICDM):
         if metadata:
             self.updateMetadata(path, metadata)
 
+    def copyLocal(self, path, localPath):
+        '''
+        @see ICDM.copyLocal
+        '''
+        assert isinstance(path, str), 'Invalid content path %s' % path
+        path, itemPath = self._validatePath(path)
+        try:
+            with open(itemPath, 'r') as itemFile:
+                try:
+                    with open(localPath) as localFile:
+                        copyfile(itemFile, localFile)
+                except:
+                    raise PathNotFound(localPath)
+        except PathNotFound:
+            raise
+        except:
+            raise PathNotFound(path)
+    
     def updateMetadata(self, path, metadata):
         '''
         @see ICDM.updateMetadata
         '''
         assert isinstance(path, str), 'Invalid content path %s' % path
         metadataPath = path + self.cdm_meta_extension
-        oldMetadata = self.getMetadata(path)
+        try:
+            oldMetadata = self.getMetadata(path)
+        except PathNotFound:
+            oldMetadata = {}
         if oldMetadata: 
             oldMetadata.update(metadata)
             metadata = oldMetadata
