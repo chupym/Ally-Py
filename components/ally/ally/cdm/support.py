@@ -81,7 +81,7 @@ class VersioningCDM(ICDM):
         '''
         @see ICDM.copyLocal
         '''
-        self.wrapped.copyLocal(path, path, localPath)
+        self.wrapped.copyLocal(path, localPath)
 
     def updateMetadata(self, path, metadata):
         '''
@@ -157,7 +157,7 @@ class ExtendPathCDM(ICDM):
         '''
         @see ICDM.copyLocal
         '''
-        self.wrapped.copyLocal(path, path, localPath)
+        self.wrapped.copyLocal(self.format % path, localPath)
 
     def updateMetadata(self, path, metadata):
         '''

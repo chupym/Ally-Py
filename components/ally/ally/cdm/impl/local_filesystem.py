@@ -190,17 +190,9 @@ class LocalFileSystemCDM(ICDM):
         '''
         assert isinstance(path, str), 'Invalid content path %s' % path
         path, itemPath = self._validatePath(path)
-        try:
-            with open(itemPath, 'r') as itemFile:
-                try:
-                    with open(localPath) as localFile:
-                        copyfile(itemFile, localFile)
-                except:
-                    raise PathNotFound(localPath)
-        except PathNotFound:
-            raise
-        except:
+        if not isfile(itemPath):
             raise PathNotFound(path)
+        copyfile(itemPath, localPath)
     
     def updateMetadata(self, path, metadata):
         '''
@@ -243,7 +235,7 @@ class LocalFileSystemCDM(ICDM):
             rmtree(itemPath)
         elif isfile(itemPath):
             os.remove(itemPath)
-            metadataPath = itemPath + self.cdm_meta_extension 
+            metadataPath = itemPath + self.cdm_meta_extension
             if isfile(metadataPath):
                 os.remove(metadataPath)
         else:
