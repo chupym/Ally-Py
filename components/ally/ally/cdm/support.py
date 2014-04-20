@@ -99,6 +99,12 @@ class VersioningCDM(ICDM):
         '''
         @see: ICDM.remove
         '''
+        lastVersion = self.wrapped.getMetadata(path).get('lastVersion')
+        if lastVersion:
+            #get the full path on the repository for the file
+            fullPath = join(self.wrapped.delivery.getRepositoryPath(), normOSPath(lastVersion.lstrip(os.sep), True))
+            if isfile(fullPath):
+                os.remove(fullPath)
         self.wrapped.remove(path)
 
     def getSupportedProtocols(self):

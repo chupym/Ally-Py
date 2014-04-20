@@ -135,7 +135,7 @@ class LocalFileSystemCDM(ICDM):
         
         assert isinstance(path, str), 'Invalid content path %s' % path
         path, itemPath = self._validatePath(path)
-        if isdir(itemPath) and isfile(itemPath):
+        if isdir(itemPath) or isfile(itemPath):
             metaItemPath = itemPath + self.cdm_meta_extension
             try:
                 with open(metaItemPath, 'r') as metaFile: 
@@ -241,7 +241,7 @@ class LocalFileSystemCDM(ICDM):
         else:
             raise PathNotFound(path)
         assert log.debug('Success removing path %s', path) or True
-        
+    
     # --------------------------------------------------------------------
     
     def _publishFromFileObj(self, path, fileObj, metadata):
