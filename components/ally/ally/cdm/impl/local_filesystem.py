@@ -25,8 +25,8 @@ from ally.container import wire
 from ally.container.ioc import injected
 from ally.zip.util_zip import normOSPath, normZipPath
 
-
 # --------------------------------------------------------------------
+
 log = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------
@@ -184,13 +184,26 @@ class LocalFileSystemCDM(ICDM):
         if metadata:
             self.updateMetadata(path, metadata)
 
+    def copyLocal(self, path, localPath):
+        '''
+        @see ICDM.copyLocal
+        '''
+        assert isinstance(path, str), 'Invalid content path %s' % path
+        path, itemPath = self._validatePath(path)
+        if not isfile(itemPath):
+            raise PathNotFound(path)
+        copyfile(itemPath, localPath)
+    
     def updateMetadata(self, path, metadata):
         '''
         @see ICDM.updateMetadata
         '''
         assert isinstance(path, str), 'Invalid content path %s' % path
         metadataPath = path + self.cdm_meta_extension
-        oldMetadata = self.getMetadata(path)
+        try:
+            oldMetadata = self.getMetadata(path)
+        except PathNotFound:
+            oldMetadata = {}
         if oldMetadata: 
             oldMetadata.update(metadata)
             metadata = oldMetadata
@@ -222,13 +235,13 @@ class LocalFileSystemCDM(ICDM):
             rmtree(itemPath)
         elif isfile(itemPath):
             os.remove(itemPath)
-            metadataPath = itemPath + self.cdm_meta_extension 
+            metadataPath = itemPath + self.cdm_meta_extension
             if isfile(metadataPath):
                 os.remove(metadataPath)
         else:
             raise PathNotFound(path)
         assert log.debug('Success removing path %s', path) or True
-        
+    
     # --------------------------------------------------------------------
     
     def _publishFromFileObj(self, path, fileObj, metadata):

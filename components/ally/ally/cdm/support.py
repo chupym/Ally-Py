@@ -77,6 +77,12 @@ class VersioningCDM(ICDM):
         '''
         self.wrapped.publishContent(path, content, metadata)
         
+    def copyLocal(self, path, localPath):
+        '''
+        @see ICDM.copyLocal
+        '''
+        self.wrapped.copyLocal(path, localPath)
+
     def updateMetadata(self, path, metadata):
         '''
         @see: ICDM.publishMetadata
@@ -93,6 +99,12 @@ class VersioningCDM(ICDM):
         '''
         @see: ICDM.remove
         '''
+        lastVersion = self.wrapped.getMetadata(path).get('lastVersion')
+        if lastVersion:
+            #get the full path on the repository for the file
+            fullPath = join(self.wrapped.delivery.getRepositoryPath(), normOSPath(lastVersion.lstrip(os.sep), True))
+            if isfile(fullPath):
+                os.remove(fullPath)
         self.wrapped.remove(path)
 
     def getSupportedProtocols(self):
@@ -147,6 +159,12 @@ class ExtendPathCDM(ICDM):
         '''
         self.wrapped.publishContent(self.format % path, content, metadata)
         
+    def copyLocal(self, path, localPath):
+        '''
+        @see ICDM.copyLocal
+        '''
+        self.wrapped.copyLocal(self.format % path, localPath)
+
     def updateMetadata(self, path, metadata):
         '''
         @see: ICDM.publishMetadata

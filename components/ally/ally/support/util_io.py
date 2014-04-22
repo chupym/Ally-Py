@@ -23,6 +23,7 @@ from zipfile import ZipFile, ZipInfo
 import abc
 import os
 import io
+from os import remove
 
 # --------------------------------------------------------------------
 
@@ -561,3 +562,18 @@ class ReplaceInStream(IInputStreamClosable):
         @see: IInputStreamClosable.close
         '''
         if isinstance(self._stream, IClosable): self._stream.close()
+
+class TempFile:
+    '''
+    Context manager for temporary files.
+    '''
+    def __init__(self, filePath):
+        assert isinstance(filePath, str) and isfile(filePath), 'Invalid file path %s' % filePath
+        self.filePath = filePath
+    
+    def __enter__(self):
+        pass
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if isfile(self.filePath):
+            remove(self.filePath)

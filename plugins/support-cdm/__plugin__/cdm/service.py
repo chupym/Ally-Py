@@ -29,11 +29,6 @@ def repository_path():
     return path.join('workspace', 'shared', 'cdm')
 
 @ioc.config
-def use_linked_cdm():
-    ''' Set to true when the files should not be copied into cdm'''
-    return True
-
-@ioc.config
 def use_versioning_cdm():
     ''' Set to true to use file versioning in cdm'''
     return True
