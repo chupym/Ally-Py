@@ -16,26 +16,21 @@ from ally.http.spec.server import HTTP_GET
 
 log = logging.getLogger(__name__)
 
-#/Content/Item/Id - works 
-#/Content/_search - retrieve all content
-#/Content/Item/_search - retrieve all items
+@ioc.config
+def elasticsearch_host():
+    ''' The host for elastic search.
+        Defaults to localhost:9200
+    '''
+    return 'localhost:9200'
 
 @ioc.before(defaultGateways)
 def updateGatewayWithElasticsearchProxy():
-    print('Extending gateways with elastic search ones')
     defaultGateways().extend([
         {
             'Name': 'get_content_item_elastic',
-            'Pattern': '^api/Content/Item[\/]',
+            'Pattern': '^api/Elastic[\/](.*)',
             'Methods': [HTTP_GET],
-            #'Host': 'localhost:9200',
-            'Navigate': 'localhost:9200/content/item/_search'
-            },
-        {
-            'Name': 'get_content_elastic',
-            'Pattern': '^api/Content[\/]',
-            'Methods': [HTTP_GET],
-            #'Host': 'localhost:9200',
-            'Navigate': 'localhost:9200/content/_search',
-            },
+            'Host': elasticsearch_host(),
+            'Navigate': '/content/{1}/_search'
+            }
         ])
