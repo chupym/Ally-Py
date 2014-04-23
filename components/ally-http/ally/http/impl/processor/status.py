@@ -13,6 +13,7 @@ from ally.container.ioc import injected
 from ally.design.processor.attribute import requires, defines
 from ally.design.processor.context import Context
 from ally.design.processor.handler import HandlerProcessor
+from ally.api.type import Input
 
 # --------------------------------------------------------------------
 
@@ -22,6 +23,7 @@ class Invoker(Context):
     '''
     # ---------------------------------------------------------------- Required
     decodingContent = requires(Context)
+    inputContent = requires(Input)
     
 class Request(Context):
     '''
@@ -81,7 +83,7 @@ class StatusHandler(HandlerProcessor):
         
         if request.invoker:
             assert isinstance(request.invoker, Invoker)
-            hasContent = request.invoker.decodingContent is not None
+            hasContent = request.invoker.decodingContent is not None or request.invoker.inputContent is not None
         else: hasContent = False
         
         status = self.codeToStatus.get(response.code)
