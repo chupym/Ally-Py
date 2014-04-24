@@ -88,6 +88,7 @@ class Custom(Entity, Gateway):
     Provides the custom defined gateway.
         Name -      the unique name for the gateway.
     '''
+    Priority = int
 
 # --------------------------------------------------------------------
 

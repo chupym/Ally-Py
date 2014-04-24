@@ -112,6 +112,7 @@ class GatewayServiceAlchemy(IGatewayService, SessionSupport):
 
         data = GatewayData()
         data.name = gateway.Name
+        data.priority = gateway.Priority
         data.identifier, data.navigate = identifier.encode(), navigate.encode()
         data.hash = sha512(data.identifier).hexdigest()
         
@@ -128,6 +129,7 @@ class GatewayServiceAlchemy(IGatewayService, SessionSupport):
         if data is None: raise IdError()
         assert isinstance(data, GatewayData), 'Invalid data %s' % data
         data.navigate = self.dataFor(gateway, onlyNavigate=True).encode()
+        if Custom.Priority in gateway: data.priority = gateway.Priority
         
     def delete(self, name):
         '''

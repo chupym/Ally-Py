@@ -151,7 +151,7 @@ class ForwardHTTPHandler(HandlerProcessor):
         
     # ----------------------------------------------------------------
     
-    def _connection(self, host:str):
+    def _connection(self, host):
         '''
         Provides a connection to work with.
         '''

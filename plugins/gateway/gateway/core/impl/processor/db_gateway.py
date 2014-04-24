@@ -39,7 +39,7 @@ class DatabaseGatewayProviderAlchemy(SessionSupport):
             The gateways for the custom database gateways.
         '''
         gateways = []
-        for data in self.session().query(GatewayData).all():
+        for data in self.session().query(GatewayData).order_by(GatewayData.priority).all():
             assert isinstance(data, GatewayData), 'Invalid data %s' % data
 
             gatewayData = json.loads(str(data.identifier, 'utf8'))

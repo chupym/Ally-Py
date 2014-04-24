@@ -11,7 +11,7 @@ Contains the SQL alchemy meta for gateway data.
 
 from .metadata_gateway import Base
 from sqlalchemy.schema import Column
-from sqlalchemy.types import String, BLOB
+from sqlalchemy.types import String, Integer, BLOB
 
 # --------------------------------------------------------------------
 
@@ -24,6 +24,7 @@ class GatewayData(Base):
 
     name = Column('name', String(255), primary_key=True)
     hash = Column('hash', String(255), unique=True)
+    priority = Column('priority', Integer)
     identifier = Column('identifier', BLOB, nullable=False)
     navigate = Column('navigate', BLOB, nullable=False)
 
