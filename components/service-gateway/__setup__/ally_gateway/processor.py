@@ -109,6 +109,13 @@ def assemblyForward() -> Assembly:
     return Assembly('Gateway forward')
 
 @ioc.entity
+def assemblyForwardByHost() -> Assembly:
+    '''
+    The assembly containing the handlers that will be used for forwarding the request based on the specified host.
+    '''
+    return Assembly('Gateway forward by host')
+
+@ioc.entity
 def assemblyGateway() -> Assembly:
     '''
     The assembly containing the handlers that will be used in processing the gateway.
@@ -184,6 +191,7 @@ def gatewayError() -> Handler: return GatewayErrorHandler()
 def gatewayForward() -> Handler:
     b = GatewayForwardHandler()
     b.assembly = assemblyForward()
+    b.assemblyByHost = assemblyForwardByHost()
     return b
 
 @ioc.entity
@@ -192,6 +200,9 @@ def externalForward() -> Handler:
     b.externalHost = external_host()
     b.externalPort = external_port()
     return b
+
+@ioc.entity
+def externalForwardByHost() -> Handler: return ForwardHTTPHandler()
 
 # --------------------------------------------------------------------
 
@@ -218,3 +229,7 @@ def updateAssemblyRESTRequestForExternal():
 def updateAssemblyForwardForExternal():
     if server_provide_gateway() == GATEWAY_EXTERNAL:
         assemblyForward().add(contentLengthDecode(), externalForward())
+        
+@ioc.before(assemblyForwardByHost)
+def updateAssemblyForwardByHost():
+    assemblyForwardByHost().add(contentLengthDecode(), externalForwardByHost())

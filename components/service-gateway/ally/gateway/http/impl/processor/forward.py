@@ -11,7 +11,7 @@ Provides the forwarding processor.
 
 from ally.container.ioc import injected
 from ally.design.processor.assembly import Assembly
-from ally.design.processor.attribute import requires
+from ally.design.processor.attribute import requires, defines
 from ally.design.processor.branch import Branch
 from ally.design.processor.context import Context
 from ally.design.processor.execution import Processing, Chain
@@ -34,6 +34,7 @@ class Gateway(Context):
     # ---------------------------------------------------------------- Required
     navigate = requires(str)
     putHeaders = requires(dict)
+    host = requires(str)
     
 class Match(Context):
     '''
@@ -47,6 +48,8 @@ class Request(HeadersRequire):
     '''
     Context for request. 
     '''
+    #----------------------------------------------------------------- Defines
+    host = defines(str)
     # ---------------------------------------------------------------- Required
     uri = requires(str)
     parameters = requires(list)
@@ -62,12 +65,15 @@ class GatewayForwardHandler(HandlerBranching):
     
     assembly = Assembly
     # The assembly to be used in processing the request for the filters.
+    assemblyByHost = Assembly
     
     def __init__(self):
         assert isinstance(self.assembly, Assembly), 'Invalid assembly %s' % self.assembly
-        super().__init__(Branch(self.assembly).using('response', 'responseCnt').included(), Gateway=Gateway, Match=Match)
+        super().__init__(Branch(self.assembly).using('response', 'responseCnt').included(), 
+                         Branch(self.assemblyByHost).using('response', 'responseCnt').included(),
+                         Gateway=Gateway, Match=Match)
 
-    def process(self, chain, processing, request:Request, **keyargs):
+    def process(self, chain, processing, processingByHost, request:Request, **keyargs):
         '''
         @see: HandlerBranching.process
         
@@ -95,9 +101,14 @@ class GatewayForwardHandler(HandlerBranching):
             parameters = parse_qsl(url.query, True, False)
             if request.parameters: parameters.extend(request.parameters)
             request.parameters = parameters
+            request.host = match.gateway.host
         
         if match.gateway.putHeaders: request.headers.update(match.gateway.putHeaders)
         
         assert log.debug('Forwarding request to \'%s\'', request.uri) or True
-        chain.process(response=processing.ctx.response(), responseCnt=processing.ctx.responseCnt())
-        chain.branch(processing)
+        if match.gateway.host:
+            chain.process(response=processingByHost.ctx.response(), responseCnt=processingByHost.ctx.responseCnt())
+            chain.branch(processingByHost)
+        else:
+            chain.process(response=processing.ctx.response(), responseCnt=processing.ctx.responseCnt())
+            chain.branch(processing)

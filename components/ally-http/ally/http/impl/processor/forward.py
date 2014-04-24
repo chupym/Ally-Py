@@ -10,7 +10,7 @@ Forwards the requests to an external server.
 '''
 
 from ally.container.ioc import injected
-from ally.design.processor.attribute import requires, defines
+from ally.design.processor.attribute import requires, defines, optional
 from ally.design.processor.context import Context
 from ally.design.processor.handler import HandlerProcessor
 from ally.http.spec.codes import SERVICE_UNAVAILABLE, CodedHTTP, PATH_NOT_FOUND
@@ -32,6 +32,8 @@ class Request(Context):
     '''
     Context for request. 
     '''
+    # ---------------------------------------------------------------- Optional
+    host = optional(str)
     # ---------------------------------------------------------------- Required
     scheme = requires(str)
     method = requires(str)
@@ -69,7 +71,7 @@ class ForwardHTTPHandler(HandlerProcessor):
     Implementation for a handler that provides forwarding to external servers.
     '''
     
-    externalHost = str
+    externalHost = None
     # The external server host.
     externalPort = int
     # The external server port.
@@ -79,13 +81,11 @@ class ForwardHTTPHandler(HandlerProcessor):
     # The headers to be removed automatically from the response.
         
     def __init__(self):
-        assert isinstance(self.externalHost, str), 'Invalid external host %s' % self.externalHost
-        assert isinstance(self.externalPort, int), 'Invalid external port %s' % self.externalPort
         assert isinstance(self.maximumRetries, int), 'Invalid maximum retries %s' % self.maximumRetries
         assert isinstance(self.removeHeaders, set), 'Invalid remove headers %s' % self.removeHeaders
         super().__init__()
         
-        self._pool = []
+        self._pool = dict()
     
     def process(self, chain, request:Request, requestCnt:RequestContent, response:Response,
                 responseCnt:ResponseContent, **keyargs):
@@ -98,8 +98,12 @@ class ForwardHTTPHandler(HandlerProcessor):
         assert isinstance(requestCnt, RequestContent), 'Invalid request content %s' % requestCnt
         assert isinstance(response, Response), 'Invalid response %s' % response
         assert isinstance(responseCnt, ResponseContent), 'Invalid response content %s' % responseCnt
-        assert request.scheme == HTTP, 'Cannot forward for scheme %s' % request.scheme
         
+        host = self.externalHost
+        if self.externalHost is None:
+            assert Request.host in request, 'Invalid request, host is required if default is missing'
+            host = request.host
+            
         if requestCnt.source is not None:
             assert isinstance(requestCnt.source, IInputStream), 'Invalid request source %s' % requestCnt.source
             body = requestCnt.source.read(requestCnt.length)
@@ -114,10 +118,11 @@ class ForwardHTTPHandler(HandlerProcessor):
 
         retries, rsp = 0, None
         while retries < self.maximumRetries:
-            connection = self._connection()
+            connection = self._connection(host)
             try:
-                connection.putrequest(request.method, urlunsplit(('', '', '/%s' % request.uri, parameters, '')),
-                                      skip_host=True, skip_accept_encoding=True)
+                uri = urlunsplit(('', '', '/%s' % request.uri, parameters, '')).lower()
+                assert log.debug('Going to forward to uri %s' % uri) or True
+                connection.putrequest(request.method, uri, skip_host=True, skip_accept_encoding=True)
                 for hname, hvalue in headers.items(): connection.putheader(hname, hvalue)
                 connection.endheaders(body)
             except socket.error as e:
@@ -141,18 +146,30 @@ class ForwardHTTPHandler(HandlerProcessor):
         response.code = response.text = rsp.reason
         response.headers = dict(rsp.headers)
         
-        responseCnt.source = Recycle(self._pool, rsp, connection)
+        responseCnt.source = Recycle(self._pool[host], rsp, connection)
         
         if self.removeHeaders: remove(response, self.removeHeaders)
         
     # ----------------------------------------------------------------
     
-    def _connection(self):
+    def _connection(self, host:str):
         '''
         Provides a connection to work with.
         '''
-        if self._pool: return self._pool.pop()
-        return HTTPConnection(self.externalHost, self.externalPort)
+        if host in self._pool:
+            pool = self._pool[host]
+            if pool:
+                return pool.pop()
+        else:
+            self._pool[host] = []
+
+        port = self.externalPort
+        hostTokens = host.split(':')
+        if len(hostTokens) > 1:
+            port = int(hostTokens[1])
+            host = hostTokens[0]
+
+        return HTTPConnection(host, port)
 
 # --------------------------------------------------------------------
 

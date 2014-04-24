@@ -38,11 +38,11 @@ class GatewayRepository(Context):
     @rtype: dictionary{integer: list[string]}
     Contains a dictionary of filter URIs indexed by the represented group. @see: Gateway.Filters.
     ''')
-#    host = defines(str, doc='''
-#    @rtype: string
-#    The host where the request needs to be resolved, if not provided the request will be delegated to the
-#    default host.
-#    ''')
+    host = defines(str, doc='''
+    @rtype: string
+    The host where the request needs to be resolved, if not provided the request will be delegated to the
+    default host.
+    ''')
 #    protocol = defines(str, doc='''
 #    @rtype: string
 #    The protocol to be used in the communication with the server that handles the request, if not provided
@@ -236,8 +236,8 @@ class GatewayRepositoryHandler(HandlerProcessor):
                 if paths is None: paths = gateway.filters[group] = []
                 paths.append(path)
                 
-#        gateway.host = obj.get('Host')
-#        assert not gateway.host or isinstance(gateway.host, str), 'Invalid host %s' % gateway.host
+        gateway.host = obj.get('Host')
+        assert not gateway.host or isinstance(gateway.host, str), 'Invalid host %s' % gateway.host
 #        
 #        gateway.protocol = obj.get('Protocol')
 #        assert not gateway.protocol or isinstance(gateway.protocol, str), 'Invalid protocol %s' % gateway.protocol
