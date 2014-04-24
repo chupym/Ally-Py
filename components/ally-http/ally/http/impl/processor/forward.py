@@ -15,7 +15,6 @@ from ally.design.processor.context import Context
 from ally.design.processor.handler import HandlerProcessor
 from ally.http.spec.codes import SERVICE_UNAVAILABLE, CodedHTTP, PATH_NOT_FOUND
 from ally.http.spec.headers import remove, CONNECTION, CONNECTION_KEEP
-from ally.http.spec.server import HTTP
 from ally.support.util_io import IInputStream, IInputStreamClosable
 from http.client import HTTPConnection, BadStatusLine
 from urllib.parse import urlencode, urlunsplit
@@ -120,7 +119,7 @@ class ForwardHTTPHandler(HandlerProcessor):
         while retries < self.maximumRetries:
             connection = self._connection(host)
             try:
-                uri = urlunsplit(('', '', '/%s' % request.uri, parameters, '')).lower()
+                uri = urlunsplit(('', '', '/%s' % request.uri, parameters, ''))
                 assert log.debug('Going to forward to uri %s' % uri) or True
                 connection.putrequest(request.method, uri, skip_host=True, skip_accept_encoding=True)
                 for hname, hvalue in headers.items(): connection.putheader(hname, hvalue)
