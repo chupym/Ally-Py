@@ -48,8 +48,17 @@ from ..ally_core.resources import decoding, updateAssemblyAssembler, \
 from .encode import updateAssemblyEncodeExportForPath
 from ally.core.http.impl.processor.assembler.node_by_property import NodeByPropertyHandler
 
+# --------------------------------------------------------------------
+
+@ioc.config
+def additional_resources() -> dict:
+    ''' A dictionary containing additional resources to be represented in the main resources.
+    Example: {'Item': ('api/elastic/Item', 'Item')}
+    '''
+    return {}
 
 # --------------------------------------------------------------------
+
 @ioc.entity
 def methodHTTP() -> Handler: return MethodHTTPHandler()
 
@@ -75,7 +84,10 @@ def pathDomain() -> Handler: return PathDomainHandler()
 def pathWebName() -> Handler: return PathWebNameHandler()
 
 @ioc.entity
-def invokerResources() -> Handler: return InvokerResourcesHandler()
+def invokerResources() -> Handler:
+    b = InvokerResourcesHandler()
+    b.additional = additional_resources()
+    return b
 
 @ioc.entity
 def invokerNode() -> Handler: return InvokerNodeHandler()

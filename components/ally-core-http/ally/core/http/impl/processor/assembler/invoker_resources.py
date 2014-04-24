@@ -75,10 +75,14 @@ class InvokerResourcesHandler(HandlerProcessor):
     # The reference attribute name.
     nameRel = 'rel'
     # The relation attribute name.
+    additional = None
+    # Additional resources links to be pushed in the main resources.
     
     def __init__(self):
         assert isinstance(self.nameResources, str), 'Invalid resources name %s' % self.nameResources
         assert isinstance(self.nameRef, str), 'Invalid reference name %s' % self.nameRef
+        assert self.additional is None or isinstance(self.additional, dict), \
+        'Invalid additional resources %s' % self.additional
         super().__init__(Node=Node)
         
     def process(self, chain, register:Register, Invoker:InvokerResources, **keyargs):
@@ -100,7 +104,8 @@ class InvokerResourcesHandler(HandlerProcessor):
         invoker.location = locationStack(self.__class__)
         invoker.methodHTTP = HTTP_GET
         invoker.path = []
-        invoker.encoder = EncoderResources(self.nameResources, self.nameRef, self.nameRel, invoker)
+        invoker.encoder = EncoderResources(self.nameResources, self.nameRef,
+                                           self.nameRel, invoker, self.additional)
 
 # --------------------------------------------------------------------
 
@@ -109,18 +114,21 @@ class EncoderResources(ITransfrom):
     Implementation for a @see: ITransfrom for resources.
     '''
     
-    def __init__(self, nameResources, nameRef, nameRel, invoker):
+    def __init__(self, nameResources, nameRef, nameRel, invoker, additional):
         '''
         Construct the resources encoder.
         '''
         assert isinstance(nameResources, str), 'Invalid resources name %s' % nameResources
         assert isinstance(nameRef, str), 'Invalid reference name %s' % nameRef
         assert isinstance(invoker, InvokerResources), 'Invalid invoker %s' % invoker
+        assert additional is None or isinstance(additional, dict), \
+        'Invalid additional resources %s' % additional
         
         self.nameResources = nameResources
         self.nameRef = nameRef
         self.nameRel = nameRel
         self.invoker = invoker
+        self.additional = additional
         
     def transform(self, value, target, support):
         '''
@@ -146,4 +154,12 @@ class EncoderResources(ITransfrom):
                 assert isinstance(invoker.doEncodePath, IDo), 'Invalid path encode %s' % invoker.doEncodePath
                 target.beginObject(''.join(names), attributes={self.nameRef: invoker.doEncodePath(support),
                                                                self.nameRel: '/'.join(names)}, **indexes).end()
+        
+            if self.additional:
+                assert isinstance(support.doEncodePath, IDo), 'Invalid path encode %s' % support.doEncodePath
+                for name in sorted(self.additional):
+                    path, rel = self.additional[name]
+                    target.beginObject(name, attributes=
+                                       {self.nameRef: support.doEncodePath(path), self.nameRel: rel}).end()
+                
         target.end()
